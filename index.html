@@ -44,7 +44,7 @@
     <button id="download-btn">Download Proof</button>
   </div>
   <canvas id="canvas" width="400" height="400"></canvas>
-  <form class="form">
+  <form class="form" id="proof-form">
     <input type="text" id="name" placeholder="Your Name" required /><br />
     <input type="email" id="email" placeholder="Your Email" required /><br />
     <input type="text" id="order-number" placeholder="Order Number" required /><br />
@@ -52,161 +52,222 @@
   </form>
 
   <script>
-    const fileInput = document.getElementById('file-input');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const bgColorInput = document.getElementById('bg-color');
-    const downloadBtn = document.getElementById('download-btn');
+    document.addEventListener('DOMContentLoaded', () => {
+      const fileInput = document.getElementById('file-input');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const bgColorInput = document.getElementById('bg-color');
+      const downloadBtn = document.getElementById('download-btn');
+      const proofForm = document.getElementById('proof-form');
 
-    let uploadedImg = new Image();
-    let imgLoaded = false;
-    let scale = 1;
-    let posX = canvas.width / 2;
-    let posY = canvas.height / 2;
-    let imgWidth, imgHeight;
+      let uploadedImg = new Image();
+      let imgLoaded = false;
+      let scale = 1;
+      let posX = canvas.width / 2;
+      let posY = canvas.height / 2;
+      let imgWidth, imgHeight;
 
-    let isDragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
 
-    let lastTouchX = 0;
-    let lastTouchY = 0;
-    let pinchStartDist = 0;
+      let lastTouchX = 0;
+      let lastTouchY = 0;
+      let pinchStartDist = 0;
 
-    function drawCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = bgColorInput.value;
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
-      ctx.fill();
-      if (imgLoaded) {
-        ctx.save();
+      function drawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = bgColorInput.value;
         ctx.beginPath();
         ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(
-          uploadedImg,
-          posX - (imgWidth * scale) / 2,
-          posY - (imgHeight * scale) / 2,
-          imgWidth * scale,
-          imgHeight * scale
-        );
-        ctx.restore();
-      }
-    }
-
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const url = URL.createObjectURL(file);
-      uploadedImg = new Image();
-      uploadedImg.onload = () => {
-        if (uploadedImg.width < 2000 || uploadedImg.height < 2000) {
-          alert('Warning: Image may not be high enough resolution for best print quality.');
+        ctx.fill();
+        if (imgLoaded) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(
+            uploadedImg,
+            posX - (imgWidth * scale) / 2,
+            posY - (imgHeight * scale) / 2,
+            imgWidth * scale,
+            imgHeight * scale
+          );
+          ctx.restore();
         }
-        imgWidth = uploadedImg.width;
-        imgHeight = uploadedImg.height;
-        scale = Math.min(canvas.width / imgWidth, canvas.height / imgHeight);
-        posX = canvas.width / 2;
-        posY = canvas.height / 2;
-        imgLoaded = true;
-        drawCanvas();
-      };
-      uploadedImg.src = url;
-    });
-
-    bgColorInput.addEventListener('input', drawCanvas);
-
-    canvas.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      dragStartX = e.offsetX;
-      dragStartY = e.offsetY;
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const dx = e.offsetX - dragStartX;
-      const dy = e.offsetY - dragStartY;
-      posX += dx;
-      posY += dy;
-      dragStartX = e.offsetX;
-      dragStartY = e.offsetY;
-      drawCanvas();
-    });
-
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-
-    canvas.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1) {
-        lastTouchX = e.touches[0].clientX;
-        lastTouchY = e.touches[0].clientY;
-      } else if (e.touches.length === 2) {
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        pinchStartDist = Math.sqrt(dx * dx + dy * dy);
       }
-    });
 
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        const dx = touch.clientX - lastTouchX;
-        const dy = touch.clientY - lastTouchY;
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        uploadedImg = new Image();
+        uploadedImg.onload = () => {
+          if (uploadedImg.width < 2000 || uploadedImg.height < 2000) {
+            alert('Warning: Image may not be high enough resolution for best print quality.');
+          }
+          imgWidth = uploadedImg.width;
+          imgHeight = uploadedImg.height;
+          scale = Math.min(canvas.width / imgWidth, canvas.height / imgHeight);
+          posX = canvas.width / 2;
+          posY = canvas.height / 2;
+          imgLoaded = true;
+          drawCanvas();
+        };
+        uploadedImg.src = url;
+      });
+
+      bgColorInput.addEventListener('input', drawCanvas);
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        dragStartX = e.offsetX;
+        dragStartY = e.offsetY;
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.offsetX - dragStartX;
+        const dy = e.offsetY - dragStartY;
         posX += dx;
         posY += dy;
-        lastTouchX = touch.clientX;
-        lastTouchY = touch.clientY;
+        dragStartX = e.offsetX;
+        dragStartY = e.offsetY;
         drawCanvas();
-      } else if (e.touches.length === 2) {
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const pinchEndDist = Math.sqrt(dx * dx + dy * dy);
-        const pinchScale = pinchEndDist / pinchStartDist;
-        scale *= pinchScale;
-        pinchStartDist = pinchEndDist;
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      canvas.addEventListener('wheel', (e) => {
+        if (!imgLoaded || window.innerWidth < 768) return;
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 1.05 : 0.95;
+        scale *= delta;
         drawCanvas();
-      }
-    }, { passive: false });
+      });
 
-    downloadBtn.addEventListener('click', () => {
-      if (!imgLoaded) {
-        alert('Please upload an image first.');
-        return;
-      }
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          lastTouchX = e.touches[0].clientX;
+          lastTouchY = e.touches[0].clientY;
+        } else if (e.touches.length === 2) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          pinchStartDist = Math.sqrt(dx * dx + dy * dy);
+        }
+      });
 
-      const exportCanvas = document.createElement('canvas');
-      const exportCtx = exportCanvas.getContext('2d');
-      exportCanvas.width = 2000;
-      exportCanvas.height = 2000;
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+          const touch = e.touches[0];
+          const dx = touch.clientX - lastTouchX;
+          const dy = touch.clientY - lastTouchY;
+          posX += dx;
+          posY += dy;
+          lastTouchX = touch.clientX;
+          lastTouchY = touch.clientY;
+          drawCanvas();
+        } else if (e.touches.length === 2) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const pinchEndDist = Math.sqrt(dx * dx + dy * dy);
+          if (pinchStartDist > 0) {
+            const pinchScale = pinchEndDist / pinchStartDist;
+            if (!isNaN(pinchScale) && isFinite(pinchScale)) {
+              scale *= pinchScale;
+              pinchStartDist = pinchEndDist;
+              drawCanvas();
+            }
+          }
+        }
+      }, { passive: false });
 
-      exportCtx.fillStyle = bgColorInput.value;
-      exportCtx.beginPath();
-      exportCtx.arc(1000, 1000, 1000, 0, Math.PI * 2);
-      exportCtx.fill();
+      downloadBtn.addEventListener('click', () => {
+        if (!imgLoaded) {
+          alert('Please upload an image first.');
+          return;
+        }
 
-      exportCtx.save();
-      exportCtx.beginPath();
-      exportCtx.arc(1000, 1000, 1000, 0, Math.PI * 2);
-      exportCtx.clip();
+        const exportCanvas = document.createElement('canvas');
+        const exportCtx = exportCanvas.getContext('2d');
+        exportCanvas.width = 4000;
+        exportCanvas.height = 4000;
 
-      const exportScale = scale * 5;
-      exportCtx.drawImage(
-        uploadedImg,
-        1000 - (imgWidth * exportScale) / 2,
-        1000 - (imgHeight * exportScale) / 2,
-        imgWidth * exportScale,
-        imgHeight * exportScale
-      );
+        exportCtx.fillStyle = bgColorInput.value;
+        exportCtx.beginPath();
+        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
+        exportCtx.fill();
 
-      exportCtx.restore();
+        exportCtx.save();
+        exportCtx.beginPath();
+        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
+        exportCtx.clip();
 
-      const link = document.createElement('a');
-      link.download = 'proof.png';
-      link.href = exportCanvas.toDataURL();
-      link.click();
+        const exportScale = scale * 10;
+        exportCtx.drawImage(
+          uploadedImg,
+          2000 - (imgWidth * exportScale) / 2,
+          2000 - (imgHeight * exportScale) / 2,
+          imgWidth * exportScale,
+          imgHeight * exportScale
+        );
+
+        exportCtx.restore();
+
+        const link = document.createElement('a');
+        link.download = 'proof.png';
+        link.href = exportCanvas.toDataURL();
+        link.click();
+      });
+
+      proofForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!imgLoaded) return alert('Please upload an image first.');
+
+        const exportCanvas = document.createElement('canvas');
+        const exportCtx = exportCanvas.getContext('2d');
+        exportCanvas.width = 4000;
+        exportCanvas.height = 4000;
+
+        exportCtx.fillStyle = bgColorInput.value;
+        exportCtx.beginPath();
+        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
+        exportCtx.fill();
+        exportCtx.save();
+        exportCtx.beginPath();
+        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
+        exportCtx.clip();
+
+        const exportScale = scale * 10;
+        exportCtx.drawImage(
+          uploadedImg,
+          2000 - (imgWidth * exportScale) / 2,
+          2000 - (imgHeight * exportScale) / 2,
+          imgWidth * exportScale,
+          imgHeight * exportScale
+        );
+
+        exportCtx.restore();
+        exportCanvas.toBlob((blob) => {
+          const formData = new FormData();
+          formData.append('name', document.getElementById('name').value);
+          formData.append('email', document.getElementById('email').value);
+          formData.append('orderNumber', document.getElementById('order-number').value);
+          formData.append('timestamp', new Date().toISOString());
+          formData.append('file', blob, 'proof.png');
+
+          fetch('YOUR_MAKE_WEBHOOK_URL_HERE', {
+            method: 'POST',
+            body: formData
+          }).then(res => {
+            if (res.ok) alert('Submitted successfully!');
+            else alert('Submission failed.');
+          }).catch(() => alert('Error submitting form.'));
+        }, 'image/png');
+      });
     });
   </script>
 </body>
