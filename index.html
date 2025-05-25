@@ -33,6 +33,11 @@
       user-select: none;
       max-width: 100%;
     }
+    .center-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
@@ -42,6 +47,10 @@
     <label for="bg-color">Background Color:</label>
     <input type="color" id="bg-color" value="#000000" />
     <button id="download-btn">Download Proof</button>
+    <div class="center-buttons">
+      <button type="button" id="center-vertical">Center Vertically</button>
+      <button type="button" id="center-horizontal">Center Horizontally</button>
+    </div>
   </div>
   <canvas id="canvas" width="400" height="400"></canvas>
   <form class="form" id="proof-form">
@@ -59,6 +68,8 @@
       const bgColorInput = document.getElementById('bg-color');
       const downloadBtn = document.getElementById('download-btn');
       const proofForm = document.getElementById('proof-form');
+      const centerVerticalBtn = document.getElementById('center-vertical');
+      const centerHorizontalBtn = document.getElementById('center-horizontal');
 
       let uploadedImg = new Image();
       let imgLoaded = false;
@@ -184,6 +195,18 @@
           }
         }
       }, { passive: false });
+
+      centerVerticalBtn.addEventListener('click', () => {
+        if (!imgLoaded) return;
+        posY = canvas.height / 2;
+        drawCanvas();
+      });
+
+      centerHorizontalBtn.addEventListener('click', () => {
+        if (!imgLoaded) return;
+        posX = canvas.width / 2;
+        drawCanvas();
+      });
 
       downloadBtn.addEventListener('click', () => {
         if (!imgLoaded) {
