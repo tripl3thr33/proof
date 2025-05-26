@@ -99,9 +99,8 @@
     }
 
     .color-display {
+      margin-top: 10px;
       font-size: 14px;
-      margin-top: 5px;
-      color: #555;
     }
 
     @media (max-width: 600px) {
@@ -142,11 +141,12 @@
       window.lastTouchEnd = now;
     }, false);
 
-    const colorInput = document.getElementById('bg-color');
+    // Show selected color
+    const bgColorInput = document.getElementById('bg-color');
     const colorDisplay = document.getElementById('color-display');
 
-    colorInput.addEventListener('input', () => {
-      colorDisplay.textContent = `Selected Color: ${colorInput.value}`;
+    bgColorInput.addEventListener('input', () => {
+      colorDisplay.textContent = `Selected Color: ${bgColorInput.value}`;
     });
   </script>
 </body>
