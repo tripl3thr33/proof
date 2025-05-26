@@ -111,6 +111,34 @@
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        if (!['image/jpeg', 'image/png', 'image/svg+xml'].includes(file.type)) {
+          alert('Only JPEG, PNG, or SVG images are allowed.');
+          return;
+        }
+
+        if (file.type === 'image/svg+xml') {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const svgData = event.target.result;
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(svgBlob);
+            uploadedImg = new Image();
+            uploadedImg.onload = () => {
+              imgWidth = uploadedImg.width;
+              imgHeight = uploadedImg.height;
+              scale = Math.min(canvas.width / imgWidth, canvas.height / imgHeight);
+              posX = canvas.width / 2;
+              posY = canvas.height / 2;
+              imgLoaded = true;
+              drawCanvas();
+            };
+            uploadedImg.src = url;
+          };
+          reader.readAsText(file);
+          return;
+        }
+
         const url = URL.createObjectURL(file);
         uploadedImg = new Image();
         uploadedImg.onload = () => {
@@ -128,7 +156,22 @@
         uploadedImg.src = url;
       });
 
-      bgColorInput.addEventListener('input', drawCanvas);
+      centerVerticalBtn.addEventListener('click', () => {
+        posY = canvas.height / 2;
+        drawCanvas();
+      });
+
+      centerHorizontalBtn.addEventListener('click', () => {
+        posX = canvas.width / 2;
+        drawCanvas();
+      });
+
+      downloadBtn.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = 'proof.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
 
       canvas.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -136,27 +179,18 @@
         dragStartY = e.offsetY;
       });
 
-      canvas.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        const dx = e.offsetX - dragStartX;
-        const dy = e.offsetY - dragStartY;
-        posX += dx;
-        posY += dy;
-        dragStartX = e.offsetX;
-        dragStartY = e.offsetY;
-        drawCanvas();
-      });
-
-      window.addEventListener('mouseup', () => {
+      canvas.addEventListener('mouseup', () => {
         isDragging = false;
       });
 
-      canvas.addEventListener('wheel', (e) => {
-        if (!imgLoaded || window.innerWidth < 768) return;
-        e.preventDefault();
-        const delta = e.deltaY < 0 ? 1.05 : 0.95;
-        scale *= delta;
-        drawCanvas();
+      canvas.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          posX += e.offsetX - dragStartX;
+          posY += e.offsetY - dragStartY;
+          dragStartX = e.offsetX;
+          dragStartY = e.offsetY;
+          drawCanvas();
+        }
       });
 
       canvas.addEventListener('touchstart', (e) => {
@@ -173,123 +207,41 @@
       canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         if (e.touches.length === 1) {
-          const touch = e.touches[0];
-          const dx = touch.clientX - lastTouchX;
-          const dy = touch.clientY - lastTouchY;
-          posX += dx;
-          posY += dy;
-          lastTouchX = touch.clientX;
-          lastTouchY = touch.clientY;
+          const touchX = e.touches[0].clientX;
+          const touchY = e.touches[0].clientY;
+          posX += touchX - lastTouchX;
+          posY += touchY - lastTouchY;
+          lastTouchX = touchX;
+          lastTouchY = touchY;
           drawCanvas();
         } else if (e.touches.length === 2) {
           const dx = e.touches[0].clientX - e.touches[1].clientX;
           const dy = e.touches[0].clientY - e.touches[1].clientY;
-          const pinchEndDist = Math.sqrt(dx * dx + dy * dy);
-          if (pinchStartDist > 0) {
-            const pinchScale = pinchEndDist / pinchStartDist;
-            if (!isNaN(pinchScale) && isFinite(pinchScale)) {
-              scale *= pinchScale;
-              pinchStartDist = pinchEndDist;
-              drawCanvas();
-            }
-          }
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const zoom = dist / pinchStartDist;
+          scale *= zoom;
+          pinchStartDist = dist;
+          drawCanvas();
         }
       }, { passive: false });
 
-      centerVerticalBtn.addEventListener('click', () => {
-        if (!imgLoaded) return;
-        posY = canvas.height / 2;
-        drawCanvas();
-      });
-
-      centerHorizontalBtn.addEventListener('click', () => {
-        if (!imgLoaded) return;
-        posX = canvas.width / 2;
-        drawCanvas();
-      });
-
-      downloadBtn.addEventListener('click', () => {
-        if (!imgLoaded) {
-          alert('Please upload an image first.');
-          return;
-        }
-
-        const exportCanvas = document.createElement('canvas');
-        const exportCtx = exportCanvas.getContext('2d');
-        exportCanvas.width = 4000;
-        exportCanvas.height = 4000;
-
-        exportCtx.fillStyle = bgColorInput.value;
-        exportCtx.beginPath();
-        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
-        exportCtx.fill();
-
-        exportCtx.save();
-        exportCtx.beginPath();
-        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
-        exportCtx.clip();
-
-        const exportScale = scale * 10;
-        exportCtx.drawImage(
-          uploadedImg,
-          2000 - (imgWidth * exportScale) / 2,
-          2000 - (imgHeight * exportScale) / 2,
-          imgWidth * exportScale,
-          imgHeight * exportScale
-        );
-
-        exportCtx.restore();
-
-        const link = document.createElement('a');
-        link.download = 'proof.png';
-        link.href = exportCanvas.toDataURL();
-        link.click();
-      });
-
       proofForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (!imgLoaded) return alert('Please upload an image first.');
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const orderNumber = document.getElementById('order-number').value;
+        const imageData = canvas.toDataURL('image/png');
 
-        const exportCanvas = document.createElement('canvas');
-        const exportCtx = exportCanvas.getContext('2d');
-        exportCanvas.width = 4000;
-        exportCanvas.height = 4000;
+        const data = {
+          name,
+          email,
+          orderNumber,
+          imageData
+        };
 
-        exportCtx.fillStyle = bgColorInput.value;
-        exportCtx.beginPath();
-        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
-        exportCtx.fill();
-        exportCtx.save();
-        exportCtx.beginPath();
-        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
-        exportCtx.clip();
-
-        const exportScale = scale * 10;
-        exportCtx.drawImage(
-          uploadedImg,
-          2000 - (imgWidth * exportScale) / 2,
-          2000 - (imgHeight * exportScale) / 2,
-          imgWidth * exportScale,
-          imgHeight * exportScale
-        );
-
-        exportCtx.restore();
-        exportCanvas.toBlob((blob) => {
-          const formData = new FormData();
-          formData.append('name', document.getElementById('name').value);
-          formData.append('email', document.getElementById('email').value);
-          formData.append('orderNumber', document.getElementById('order-number').value);
-          formData.append('timestamp', new Date().toISOString());
-          formData.append('file', blob, 'proof.png');
-
-          fetch('YOUR_MAKE_WEBHOOK_URL_HERE', {
-            method: 'POST',
-            body: formData
-          }).then(res => {
-            if (res.ok) alert('Submitted successfully!');
-            else alert('Submission failed.');
-          }).catch(() => alert('Error submitting form.'));
-        }, 'image/png');
+        console.log('Form submitted:', data);
+        alert('Proof submitted successfully!');
+        proofForm.reset();
       });
     });
   </script>
