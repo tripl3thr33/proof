@@ -6,59 +6,268 @@
   <title>Online Proofing App</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    canvas {
-      border-radius: 50%;
-      background-color: black;
-      touch-action: none;
-    }
-    .controls {
-      margin: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .form {
-      margin-top: 20px;
-    }
-    #image-container {
-      position: relative;
-      touch-action: none;
-      user-select: none;
-      max-width: 100%;
-    }
-    .center-buttons {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 40px 20px;
+  background: #f5f7fa;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+h1 {
+  font-weight: 700;
+  font-size: 2.4rem;
+  margin-bottom: 30px;
+  color: #222;
+}
+
+canvas {
+  border-radius: 50%;
+  background-color: #1e1e1e;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+  transition: box-shadow 0.3s ease;
+  margin: 30px;
+}
+
+canvas:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.controls {
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+.controls input[type="file"] {
+  flex-grow: 1;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+label[for="bg-color"] {
+  align-self: center;
+  font-weight: 600;
+  margin-right: 8px;
+  color: #555;
+}
+
+#bg-color {
+  width: 40px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+button {
+  background: #0078d7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,120,215,0.4);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+  margin: 20px 0;
+}
+
+button:hover {
+  background: #005ea3;
+  box-shadow: 0 6px 18px rgba(0,94,163,0.6);
+}
+
+.center-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.form {
+  background: white;
+  padding: 25px 30px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.form p {
+font-style: italic;
+line-height: 1.5em;
+}
+
+.form input[type="text"],
+.form input[type="email"] {
+  padding: 12px 15px;
+  font-size: 1rem;
+  border: 1.8px solid #ddd;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+}
+
+.form input[type="file"] {
+  position: relative;
+}
+
+.form input[type="file"]::file-selector-button {
+  width: 126px;
+  color: transparent;
+}
+
+.form input[type="file"]::before {
+  position: absolute;
+  pointer-events: none;
+  top: 10px;
+  left: 16px;
+  height: 20px;
+  width: 20px;
+  content: "";
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%235c5c5c'%3E%3Cpath d='M18 15v3H6v-3H4v3c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-3h-2zM7 9l1.41 1.41L11 7.83V16h2V7.83l2.59 2.58L17 9l-5-5-5 5z'/%3E%3C/svg%3E");
+}
+
+.form input[type="file"]::after {
+  position: absolute;
+  pointer-events: none;
+  top: 11px;
+  left: 40px;
+  color: #5c5c5c;
+  content: "Upload File";
+}
+
+/* file upload button */
+.form input[type="file"]::file-selector-button {
+  border-radius: 4px;
+  padding: 0 16px;
+  height: 40px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background-color: white;
+  box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.05);
+  margin-right: 16px;
+  transition: background-color 200ms;
+}
+
+/* file upload button hover state */
+.form input[type="file"]::file-selector-button:hover {
+  background-color: #f3f4f6;
+}
+
+/* file upload button active state */
+.form input[type="file"]::file-selector-button:active {
+  background-color: #e5e7eb;
+}
+
+
+.form input[type="text"]:focus,
+.form input[type="email"]:focus {
+  border-color: #0078d7;
+  outline: none;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+.form button[type="submit"] {
+  margin-top: 10px;
+}
+
+.form label {
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .controls {
+    flex-direction: column;
+    max-width: 100%;
+  }
+  .center-buttons {
+    justify-content: center;
+  }
+  .form {
+    padding: 20px;
+  }
+}
+
+.file_upload {
+  justify-content: center;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.scale-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  max-width: 420px;
+  width: 100%;
+  justify-content: center;
+}
+
+#scale-slider {
+  flex-grow: 1;
+  cursor: pointer;
+}
+
+#scale-value {
+  min-width: 50px;
+  text-align: center;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
-  <h1>Design Your Proof</h1>
-  <div class="controls">
-    <input type="file" id="file-input" accept="image/png, image/jpeg, image/svg+xml" />
-    <label for="bg-color">Background Color:</label>
-    <input type="color" id="bg-color" value="#000000" />
-    <button id="download-btn">Download Proof</button>
+  <h1>Upload Your Design</h1>
+  <form class="form" id="proof-form">
+      <p> Thank you for your order! To get started, please use our live proofing app to upload your logo. You’ll be able to adjust the size and position of your image to exactly how you want it printed.
+	  </p>
+	  <p>For the best results, make sure to upload a clear, high-resolution file. Since we print exactly what is submitted, feel free to reach out via email or message us if you’re unsure whether your image is suitable for printing.  We’re happy to help! 
+	  </p>
+	  <br />
+    <input type="text" id="name" placeholder="Your Name" required /><br />
+	<input type="email" id="email" placeholder="Your Email" required /><br />
+    <input type="text" id="order-number" placeholder="Order Number" required /><br />
+	<p> Upload your file below using any of these accepted file formats: .jpg, .png, .svg
+	<b><br />For other file formats, please email us at support@adeptsigns.com with your file and order number and we will have a digital proof made for you within 1-2 business days.</b>
+	</p>
+	<input type="file" id="file-input" />
+  </form>
+  
+  <canvas id="canvas" width="800" height="800"></canvas>
+  <div class="scale-control">
+  <label for="scale-slider">Adjust Image Size:</label>
+  <input type="range" id="scale-slider" min="0.1" max="3" step="0.01" value="1" />
+  <span id="scale-value">100%</span>
+  </div>
+  	<div class="controls">
+		<label for="bg-color">Background Color:</label>
+		<input type="color" id="bg-color" value="#000000" />
     <div class="center-buttons">
       <button type="button" id="center-vertical">Center Vertically</button>
       <button type="button" id="center-horizontal">Center Horizontally</button>
     </div>
   </div>
-  <canvas id="canvas" width="400" height="400"></canvas>
-  <form class="form" id="proof-form">
-    <input type="text" id="name" placeholder="Your Name" required /><br />
-    <input type="email" id="email" placeholder="Your Email" required /><br />
-    <input type="text" id="order-number" placeholder="Order Number" required /><br />
-    <button type="submit">Approve & Submit</button>
-  </form>
+  <div class="form">
+	<p>Please review final artwork carefully.  Your approval will indicate acceptance of materials including responsibility for errors, omissions and legal and ethical compliance. If we are printing this project and if a rerun is necessary due to overlooked error(s) in this final document, customer assumes responsibility and charges. No printing will be started until payment and approval of this design proof is received.</p>
+	<p>Proof approvals will be made before 3pm PST will be added to the production queue starting the next business day.  Any proof approvals made after 3pm PST will be accepted the following business day and will start the production timeline the following business day.  Production timelines differ from product to product and do not include transit shipping times.  Please refer to your product listing page for the production timeline. Estimated shipping timelines are estimates.  Factors such as weather delays, shipping delays, or other unforseen circumstances outside of our control may affect delivery dates.  For rush shipping, please contact us via email or messages prior to proof approval to make sure we can deliver it to you in time.</p>
+  </div>
+  <button type="submit">Approve & Submit</button>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -66,10 +275,12 @@
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
       const bgColorInput = document.getElementById('bg-color');
-      const downloadBtn = document.getElementById('download-btn');
       const proofForm = document.getElementById('proof-form');
       const centerVerticalBtn = document.getElementById('center-vertical');
       const centerHorizontalBtn = document.getElementById('center-horizontal');
+      const scaleSlider = document.getElementById('scale-slider');
+	  const scaleValueDisplay = document.getElementById('scale-value');
+
 
       let uploadedImg = new Image();
       let imgLoaded = false;
@@ -108,37 +319,16 @@
         }
       }
 
+	  // Update scale when slider value changes
+	  scaleSlider.addEventListener('input', () => {
+	    scale = parseFloat(scaleSlider.value);
+	    scaleValueDisplay.textContent = `${Math.round(scale * 100)}%`;
+	    drawCanvas();
+	  });
+
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
-        if (!['image/jpeg', 'image/png', 'image/svg+xml'].includes(file.type)) {
-          alert('Only JPEG, PNG, or SVG images are allowed.');
-          return;
-        }
-
-        if (file.type === 'image/svg+xml') {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const svgData = event.target.result;
-            const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(svgBlob);
-            uploadedImg = new Image();
-            uploadedImg.onload = () => {
-              imgWidth = uploadedImg.width;
-              imgHeight = uploadedImg.height;
-              scale = Math.min(canvas.width / imgWidth, canvas.height / imgHeight);
-              posX = canvas.width / 2;
-              posY = canvas.height / 2;
-              imgLoaded = true;
-              drawCanvas();
-            };
-            uploadedImg.src = url;
-          };
-          reader.readAsText(file);
-          return;
-        }
-
         const url = URL.createObjectURL(file);
         uploadedImg = new Image();
         uploadedImg.onload = () => {
@@ -156,22 +346,7 @@
         uploadedImg.src = url;
       });
 
-      centerVerticalBtn.addEventListener('click', () => {
-        posY = canvas.height / 2;
-        drawCanvas();
-      });
-
-      centerHorizontalBtn.addEventListener('click', () => {
-        posX = canvas.width / 2;
-        drawCanvas();
-      });
-
-      downloadBtn.addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.download = 'proof.png';
-        link.href = canvas.toDataURL();
-        link.click();
-      });
+      bgColorInput.addEventListener('input', drawCanvas);
 
       canvas.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -179,19 +354,31 @@
         dragStartY = e.offsetY;
       });
 
-      canvas.addEventListener('mouseup', () => {
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.offsetX - dragStartX;
+        const dy = e.offsetY - dragStartY;
+        posX += dx;
+        posY += dy;
+        dragStartX = e.offsetX;
+        dragStartY = e.offsetY;
+        drawCanvas();
+      });
+
+      window.addEventListener('mouseup', () => {
         isDragging = false;
       });
 
-      canvas.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-          posX += e.offsetX - dragStartX;
-          posY += e.offsetY - dragStartY;
-          dragStartX = e.offsetX;
-          dragStartY = e.offsetY;
-          drawCanvas();
-        }
-      });
+	  canvas.addEventListener('wheel', (e) => {
+		if (!imgLoaded || window.innerWidth < 768) return;
+		  e.preventDefault();
+		  const delta = e.deltaY < 0 ? 1.05 : 0.95;
+		  scale *= delta;
+		  scale = Math.max(0.1, Math.min(scale, 3)); // Clamp scale between 0.1 and 3
+		  scaleSlider.value = scale.toFixed(2);
+		  scaleValueDisplay.textContent = `${Math.round(scale * 100)}%`;
+		  drawCanvas();
+		});
 
       canvas.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
@@ -207,41 +394,87 @@
       canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         if (e.touches.length === 1) {
-          const touchX = e.touches[0].clientX;
-          const touchY = e.touches[0].clientY;
-          posX += touchX - lastTouchX;
-          posY += touchY - lastTouchY;
-          lastTouchX = touchX;
-          lastTouchY = touchY;
+          const touch = e.touches[0];
+          const dx = touch.clientX - lastTouchX;
+          const dy = touch.clientY - lastTouchY;
+          posX += dx;
+          posY += dy;
+          lastTouchX = touch.clientX;
+          lastTouchY = touch.clientY;
           drawCanvas();
         } else if (e.touches.length === 2) {
           const dx = e.touches[0].clientX - e.touches[1].clientX;
           const dy = e.touches[0].clientY - e.touches[1].clientY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const zoom = dist / pinchStartDist;
-          scale *= zoom;
-          pinchStartDist = dist;
-          drawCanvas();
+          const pinchEndDist = Math.sqrt(dx * dx + dy * dy);
+          if (pinchStartDist > 0) {
+            const pinchScale = pinchEndDist / pinchStartDist;
+            if (!isNaN(pinchScale) && isFinite(pinchScale)) {
+              scale *= pinchScale;
+              pinchStartDist = pinchEndDist;
+              drawCanvas();
+            }
+          }
         }
       }, { passive: false });
 
+      centerVerticalBtn.addEventListener('click', () => {
+        if (!imgLoaded) return;
+        posY = canvas.height / 2;
+        drawCanvas();
+      });
+
+      centerHorizontalBtn.addEventListener('click', () => {
+        if (!imgLoaded) return;
+        posX = canvas.width / 2;
+        drawCanvas();
+      });
+
+ 
+
       proofForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const orderNumber = document.getElementById('order-number').value;
-        const imageData = canvas.toDataURL('image/png');
+        if (!imgLoaded) return alert('Please upload an image first.');
 
-        const data = {
-          name,
-          email,
-          orderNumber,
-          imageData
-        };
+        const exportCanvas = document.createElement('canvas');
+        const exportCtx = exportCanvas.getContext('2d');
+        exportCanvas.width = 4000;
+        exportCanvas.height = 4000;
 
-        console.log('Form submitted:', data);
-        alert('Proof submitted successfully!');
-        proofForm.reset();
+        exportCtx.fillStyle = bgColorInput.value;
+        exportCtx.beginPath();
+        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
+        exportCtx.fill();
+        exportCtx.save();
+        exportCtx.beginPath();
+        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
+        exportCtx.clip();
+
+        const exportScale = scale * 10;
+        exportCtx.drawImage(
+          uploadedImg,
+          2000 - (imgWidth * exportScale) / 2,
+          2000 - (imgHeight * exportScale) / 2,
+          imgWidth * exportScale,
+          imgHeight * exportScale
+        );
+
+        exportCtx.restore();
+        exportCanvas.toBlob((blob) => {
+          const formData = new FormData();
+          formData.append('name', document.getElementById('name').value);
+          formData.append('email', document.getElementById('email').value);
+          formData.append('orderNumber', document.getElementById('order-number').value);
+          formData.append('timestamp', new Date().toISOString());
+          formData.append('file', blob, 'proof.png');
+
+          fetch('YOUR_MAKE_WEBHOOK_URL_HERE', {
+            method: 'POST',
+            body: formData
+          }).then(res => {
+            if (res.ok) alert('Submitted successfully!');
+            else alert('Submission failed.');
+          }).catch(() => alert('Error submitting form.'));
+        }, 'image/png');
       });
     });
   </script>
