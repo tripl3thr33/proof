@@ -535,7 +535,7 @@ async function submitForm() {
 
     const result = await response.json();
     if (result.success) {
-      alert("✅ Upload successful!\n" + result.url);
+      alert("✅ Upload successful!\n");
     } else {
       alert("❌ Upload failed: " + result.error);
     }
