@@ -270,6 +270,8 @@ line-height: 1.5em;
   <button type="submit">Approve & Submit</button>
 
   <script>
+    document.getElementById('submit-btn').addEventListener('click', submitForm);
+
     document.addEventListener('DOMContentLoaded', () => {
       const fileInput = document.getElementById('file-input');
       const canvas = document.getElementById('canvas');
