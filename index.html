@@ -230,6 +230,11 @@ line-height: 1.5em;
   text-align: center;
   font-weight: bold;
 }
+
+.canvas-container {
+  width: 800px;
+}
+
   </style>
 </head>
 <body>
@@ -240,16 +245,18 @@ line-height: 1.5em;
 	  <p>For the best results, make sure to upload a clear, high-resolution file. Since we print exactly what is submitted, feel free to reach out via email or message us if you’re unsure whether your image is suitable for printing.  We’re happy to help! 
 	  </p>
 	  <br />
-    <input type="text" id="name" placeholder="Your Name" required /><br />
-	<input type="email" id="email" placeholder="Your Email" required /><br />
-    <input type="text" id="order-number" placeholder="Order Number" required /><br />
+    <input type="text" id="name" name="name" placeholder="Your Name" required /><br />
+	<input type="email" id="email" name="email" placeholder="Your Email" required /><br />
+    <input type="text" id="orderNumber" name="orderNumber" placeholder="Order Number" required /><br />
 	<p> Upload your file below using any of these accepted file formats: .jpg, .png, .svg
 	<b><br />For other file formats, please email us at support@adeptsigns.com with your file and order number and we will have a digital proof made for you within 1-2 business days.</b>
 	</p>
 	<input type="file" id="file-input" />
   </form>
   
-  <canvas id="canvas" width="800" height="800"></canvas>
+  <div class="canvas-container">
+	<canvas id="canvas" width="800" height="800"></canvas>
+  </div>
   <div class="scale-control">
   <label for="scale-slider">Adjust Image Size:</label>
   <input type="range" id="scale-slider" min="0.1" max="3" step="0.01" value="1" />
@@ -267,10 +274,15 @@ line-height: 1.5em;
 	<p>Please review final artwork carefully.  Your approval will indicate acceptance of materials including responsibility for errors, omissions and legal and ethical compliance. If we are printing this project and if a rerun is necessary due to overlooked error(s) in this final document, customer assumes responsibility and charges. No printing will be started until payment and approval of this design proof is received.</p>
 	<p>Proof approvals will be made before 3pm PST will be added to the production queue starting the next business day.  Any proof approvals made after 3pm PST will be accepted the following business day and will start the production timeline the following business day.  Production timelines differ from product to product and do not include transit shipping times.  Please refer to your product listing page for the production timeline. Estimated shipping timelines are estimates.  Factors such as weather delays, shipping delays, or other unforseen circumstances outside of our control may affect delivery dates.  For rush shipping, please contact us via email or messages prior to proof approval to make sure we can deliver it to you in time.</p>
   </div>
-  <button type="submit">Approve & Submit</button>
+
+  <button onclick="submitForm()" id="submit-btn" type="submit">
+  <span id="button-text">Approve & Submit</span>
+  <span id="loading-spinner" style="display: none; margin-left: 8px;">
+    ⏳
+  </span>
+  </button>
 
   <script>
-    document.getElementById('submit-btn').addEventListener('click', submitForm);
 
     document.addEventListener('DOMContentLoaded', () => {
       const fileInput = document.getElementById('file-input');
@@ -344,6 +356,12 @@ line-height: 1.5em;
           posY = canvas.height / 2;
           imgLoaded = true;
           drawCanvas();
+		  window.uploadedImg = uploadedImg;
+		  window.imgLoaded = imgLoaded;
+		  window.posX = posX;
+		  window.posY = posY;
+		  window.imgWidth = imgWidth;
+		  window.imgHeight = imgHeight;
         };
         uploadedImg.src = url;
       });
@@ -430,91 +448,106 @@ line-height: 1.5em;
         posX = canvas.width / 2;
         drawCanvas();
       });
-
- 
-
-      proofForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (!imgLoaded) return alert('Please upload an image first.');
-
-        const exportCanvas = document.createElement('canvas');
-        const exportCtx = exportCanvas.getContext('2d');
-        exportCanvas.width = 4000;
-        exportCanvas.height = 4000;
-
-        exportCtx.fillStyle = bgColorInput.value;
-        exportCtx.beginPath();
-        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
-        exportCtx.fill();
-        exportCtx.save();
-        exportCtx.beginPath();
-        exportCtx.arc(2000, 2000, 2000, 0, Math.PI * 2);
-        exportCtx.clip();
-
-        const exportScale = scale * 10;
-        exportCtx.drawImage(
-          uploadedImg,
-          2000 - (imgWidth * exportScale) / 2,
-          2000 - (imgHeight * exportScale) / 2,
-          imgWidth * exportScale,
-          imgHeight * exportScale
-        );
-
-        exportCtx.restore();
-        exportCanvas.toBlob((blob) => {
-          const formData = new FormData();
-          formData.append('name', document.getElementById('name').value);
-          formData.append('email', document.getElementById('email').value);
-          formData.append('orderNumber', document.getElementById('order-number').value);
-          formData.append('timestamp', new Date().toISOString());
-          formData.append('file', blob, 'proof.png');
-
-          const reader = new FileReader();
-		function submitForm() {
-		  const canvas = document.getElementById('preview-canvas');
-		  const name = document.getElementById('name').value;
-		  const email = document.getElementById('email').value;
-		  const orderNumber = document.getElementById('order-number').value;
-
-		  canvas.toBlob(blob => {
-			if (!blob) {
-			  alert('Failed to generate image. Please try again.');
-			  return;
-			}
-
-			const reader = new FileReader();
-			reader.onloadend = function () {
-			  const base64Data = reader.result.split(',')[1];
-
-			  fetch('https://script.google.com/macros/s/AKfycbxHNKiNU9bC7AZPXOYUue2bJgBV9CX6KjeEnjYrNM_ll2C2pIRzitEQEWTpDybkbsI/exec', {
-				method: 'POST',
-				headers: {
-				  'Content-Type': 'application/x-www-form-urlencoded'
-				},
-				body: new URLSearchParams({
-				  name: name,
-				  email: email,
-				  orderNumber: orderNumber,
-				  filename: 'proof.png',
-				  mimeType: 'image/png',
-				  file: base64Data
-				})
-			  }).then(res => {
-				if (res.ok) {
-				  alert('Submitted successfully!');
-				} else {
-				  alert('Submission failed. Response not ok.');
-				}
-			  }).catch(err => {
-				console.error('Upload error:', err);
-				alert('Error submitting form.');
-			  });
-			};
-			reader.readAsDataURL(blob);
-		  }, 'image/png');
-		}
-      });
     });
+
+async function submitForm() {
+  const submitBtn = document.getElementById('submit-btn');
+  const buttonText = document.getElementById('button-text');
+  const spinner = document.getElementById('loading-spinner');
+
+  submitBtn.disabled = true;
+  buttonText.textContent = "Submitting...";
+  spinner.style.display = 'inline-block';
+  const originalCanvas = document.getElementById('canvas');
+  if (!originalCanvas) {
+    alert("Canvas element not found!");
+    return;
+  }
+
+  const name = document.getElementById('name')?.value || '';
+  const email = document.getElementById('email')?.value || '';
+  const orderNumber = document.getElementById('orderNumber')?.value || '';
+  const bgColor = document.getElementById('bg-color')?.value || '#000000';
+
+  // Reference to your image and settings from global scope
+  const scaleSlider = document.getElementById('scale-slider');
+  const scale = parseFloat(scaleSlider?.value || '1');
+  const uploadedImg = window.uploadedImg;
+  const imgLoaded = window.imgLoaded;
+  const posX = window.posX;
+  const posY = window.posY;
+  const imgWidth = window.imgWidth;
+  const imgHeight = window.imgHeight;
+
+  if (!imgLoaded) {
+    alert("Please upload an image before submitting.");
+    return;
+  }
+
+  // 1. Create high-res canvas
+  const highResCanvas = document.createElement('canvas');
+  highResCanvas.width = 4000;
+  highResCanvas.height = 4000;
+  const ctx = highResCanvas.getContext('2d');
+
+  // 2. Fill circular background
+  ctx.fillStyle = bgColor;
+  ctx.beginPath();
+  ctx.arc(2000, 2000, 2000, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Clip to circle
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(2000, 2000, 2000, 0, Math.PI * 2);
+  ctx.clip();
+
+  // 4. Calculate scale/position based on original canvas ratio
+  const scaleFactor = 4000 / originalCanvas.width;
+  const scaledImgWidth = imgWidth * scale * scaleFactor;
+  const scaledImgHeight = imgHeight * scale * scaleFactor;
+  const offsetX = (posX * scaleFactor) - (scaledImgWidth / 2);
+  const offsetY = (posY * scaleFactor) - (scaledImgHeight / 2);
+
+  ctx.drawImage(uploadedImg, offsetX, offsetY, scaledImgWidth, scaledImgHeight);
+  ctx.restore();
+
+  // 5. Convert to base64
+  const imageDataURL = highResCanvas.toDataURL('image/png');
+  const base64Image = imageDataURL.split(',')[1];
+
+  // 6. Prepare FormData
+  const formData = new FormData();
+  formData.append('file', base64Image);
+  formData.append('filename', `${orderNumber}_${name}_proof.png`);
+  formData.append('mimeType', 'image/png');
+  formData.append('name', name);
+  formData.append('email', email);
+  formData.append('orderNumber', orderNumber);
+
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbwXXwrO7dThW-z6uKIJdyq5J6P2bRhyc6_eIregd2EQRDhw6IzDgOfMqhdKXRMce3E/exec';
+
+  try {
+    const response = await fetch(scriptURL, {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      alert("✅ Upload successful!\n" + result.url);
+    } else {
+      alert("❌ Upload failed: " + result.error);
+    }
+  } catch (error) {
+    alert("❌ Network error: " + error.message);
+  } finally {
+    // Re-enable button and hide spinner
+    submitBtn.disabled = false;
+    buttonText.textContent = "Approve & Submit";
+    spinner.style.display = 'none';
+  }
+}
   </script>
 </body>
 </html>
