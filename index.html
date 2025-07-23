@@ -467,13 +467,30 @@ line-height: 1.5em;
           formData.append('timestamp', new Date().toISOString());
           formData.append('file', blob, 'proof.png');
 
-          fetch('YOUR_MAKE_WEBHOOK_URL_HERE', {
-            method: 'POST',
-            body: formData
-          }).then(res => {
-            if (res.ok) alert('Submitted successfully!');
-            else alert('Submission failed.');
-          }).catch(() => alert('Error submitting form.'));
+          const reader = new FileReader();
+reader.onloadend = function () {
+  const base64Data = reader.result.split(',')[1];
+
+  fetch('https://script.google.com/macros/s/AKfycbxHNKiNU9bC7AZPXOYUue2bJgBV9CX6KjeEnjYrNM_ll2C2pIRzitEQEWTpDybkbsI/exec', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      orderNumber: document.getElementById('order-number').value,
+      filename: 'proof.png',
+      mimeType: 'image/png',
+      file: base64Data
+    })
+  }).then(res => {
+    if (res.ok) alert('Submitted successfully!');
+    else alert('Submission failed.');
+  }).catch(() => alert('Error submitting form.'));
+};
+
+reader.readAsDataURL(blob);
         }, 'image/png');
       });
     });
